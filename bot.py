@@ -1,22 +1,20 @@
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters.command import Command
+import asyncio
+from aiogram import Bot, Dispatcher
 import os
 from dotenv import load_dotenv, find_dotenv
+from handlers import common, getting_info
 
 load_dotenv(find_dotenv())
 
 
-bot = Bot(token=f'{os.getenv("BOT_TOKEN")}')
-dp = Dispatcher()
-
-
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer("Здесь что-то будет")
-
-
 async def main():
+    bot = Bot(token=f'{os.getenv("BOT_TOKEN")}')
+    dp = Dispatcher()
+
+    dp.include_router(common.router)
+    dp.include_router(getting_info.router)
+
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
