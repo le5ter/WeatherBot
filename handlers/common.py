@@ -28,3 +28,8 @@ async def cmd_clear(message: Message, bot: Bot):
     except TelegramBadRequest as ex:
         if ex.message == "Bad Request: message to delete not found":
             print("Все сообщения удалены")
+
+
+@router.message(Command("restart"))
+async def cmd_restart(message: Message, state: FSMContext):
+    await state.set_state(GetInfo.getting_city)
