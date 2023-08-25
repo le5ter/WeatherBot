@@ -102,78 +102,81 @@ async def choosing_period(message: Message, state: FSMContext):
         async with session.get(f"{url3}{city_id}/?&days=3") as response:
             json_body = await response.json()
     city: str = user_data['city_name']
-    now = datetime.datetime.now()
-    format_time = f'{now:%d-%m-%Y}'
-    number = 0
 
+    def format_data(date: str) -> str:
+        year = date[:4]
+        month = date[5:7]
+        day = date[8:]
+        return f'{day}-{month}-{year}'
+    day1 = format_data(json_body['response'][0]['date']['local'][:10])
+    day2 = format_data(json_body['response'][4]['date']['local'][:10])
+    day3 = format_data(json_body['response'][8]['date']['local'][:10])
+
+    number = 0
     for i in range(1, 4):
         for j in range(1, 5):
             wdata.weather_dict_3d[i][j]['temperature'] = json_body['response'][number]['temperature']['air']['C']
-            wdata.weather_dict_3d[i][j]['wind_direction'] = json_body['response'][number]['wind']['direction']['scale_8']
+            wdata.weather_dict_3d[i][j]['wind_direction'] = json_body['response'][number]['wind']['direction'][
+                'scale_8']
             wdata.weather_dict_3d[i][j]['wind_speed'] = json_body['response'][number]['wind']['speed']['m_s']
-            wdata.weather_dict_3d[i][j]['precipitation_amount'] = json_body['response'][number]['precipitation']['amount']
+            wdata.weather_dict_3d[i][j]['precipitation_amount'] = json_body['response'][number]['precipitation'][
+                'amount']
             number += 1
 
-    weather_result1 = f'Город: {city}\n' \
-                      f'Дата: {format_time}\n' \
-                      f'\U0001F311Ночь:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[1][1]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[1][1]["precipitation_amount"]}' \
-                      f'\U0001F316Утро:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[1][2]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][2]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[1][2]["precipitation_amount"]}' \
-                      f'\U00002600День:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[1][3]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][3]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[1][3]["precipitation_amount"]}' \
-                      f'\U0001F312Вечер:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[1][4]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][4]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[1][4]["precipitation_amount"]}'
-
-    weather_result2 = f'Город: {city}\n' \
-                      f'Дата: {format_time}\n' \
-                      f'\U0001F311Ночь:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[2][1]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[2][1]["precipitation_amount"]}' \
-                      f'\U0001F316Утро:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[2][2]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][2]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[2][2]["precipitation_amount"]}' \
-                      f'\U00002600День:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[2][3]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][3]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[2][3]["precipitation_amount"]}' \
-                      f'\U0001F312Вечер:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[2][4]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][4]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[2][4]["precipitation_amount"]}'
-
-    weather_result3 = f'Город: {city}\n' \
-                      f'Дата: {format_time}\n' \
-                      f'\U0001F311Ночь:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[3][1]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[3][1]["precipitation_amount"]}' \
-                      f'\U0001F316Утро:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[3][2]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][2]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[3][2]["precipitation_amount"]}' \
-                      f'\U00002600День:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[3][3]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][3]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[3][3]["precipitation_amount"]}' \
-                      f'\U0001F312Вечер:\n' \
-                      f'Температура воздуха: {wdata.weather_dict_3d[3][4]["temperature"]}°C ' \
-                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][4]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
-                      f'Кол-во осадков: {wdata.weather_dict_3d[3][4]["precipitation_amount"]}' \
-                      f'\n\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
+    weather_result = f'Город: {city}\n' \
+                     f'Дата: {day1}\n' \
+                     f'\U0001F311Ночь: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[1][1]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[1][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][1]["precipitation_amount"]} мм\n' \
+                     f'\U0001F316Утро: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[1][2]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[1][2]["wind_direction"]]} {wdata.weather_dict_3d[1][2]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][2]["precipitation_amount"]} мм\n' \
+                     f'\U00002600День: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[1][3]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[1][3]["wind_direction"]]} {wdata.weather_dict_3d[1][3]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][3]["precipitation_amount"]} мм\n' \
+                     f'\U0001F312Вечер: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[1][4]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[1][4]["wind_direction"]]} {wdata.weather_dict_3d[1][4]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][4]["precipitation_amount"]} мм\n' \
+                     f'Дата: {day2}\n' \
+                     f'\U0001F311Ночь: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[2][1]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[2][1]["wind_direction"]]} {wdata.weather_dict_3d[2][1]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][1]["precipitation_amount"]} мм\n' \
+                     f'\U0001F316Утро: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[2][2]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[2][2]["wind_direction"]]} {wdata.weather_dict_3d[2][2]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][2]["precipitation_amount"]} мм\n' \
+                     f'\U00002600День: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[2][3]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[2][3]["wind_direction"]]} {wdata.weather_dict_3d[2][3]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][3]["precipitation_amount"]} мм\n' \
+                     f'\U0001F312Вечер: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[2][4]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[2][4]["wind_direction"]]} {wdata.weather_dict_3d[2][4]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][4]["precipitation_amount"]} мм\n' \
+                     f'Дата: {day3}\n' \
+                     f'\U0001F311Ночь: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[3][1]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[3][1]["wind_direction"]]} {wdata.weather_dict_3d[3][1]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][1]["precipitation_amount"]} мм\n' \
+                     f'\U0001F316Утро: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[3][2]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[3][2]["wind_direction"]]} {wdata.weather_dict_3d[3][2]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][2]["precipitation_amount"]} мм\n' \
+                     f'\U00002600День: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[3][3]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[3][3]["wind_direction"]]} {wdata.weather_dict_3d[3][3]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][3]["precipitation_amount"]} мм\n' \
+                     f'\U0001F312Вечер: ' \
+                     f'\U0001F321 {wdata.weather_dict_3d[3][4]["temperature"]}°C ' \
+                     f'\U0001F32C {wdata.wind_dict[wdata.weather_dict_3d[3][4]["wind_direction"]]} {wdata.weather_dict_3d[3][4]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][4]["precipitation_amount"]} мм\n' \
+                     f'\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
     await state.set_state(States.getting_weather)
-    await message.answer(weather_result1)
-    await message.answer(weather_result2)
-    await message.answer(weather_result3, parse_mode="HTML")
+    await message.answer(weather_result, parse_mode="HTML")
     await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
