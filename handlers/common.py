@@ -31,7 +31,7 @@ async def right_choice(message: Message, state: FSMContext):
 
 @router.message(States.getting_weather)
 async def wrong_choice(message: Message):
-    await message.answer("Так не пойдет, нажмите на кнопку")
+    await message.answer("Так не пойдет, нажмите на кнопку!")
 
 
 @router.message(Command("clear"))
