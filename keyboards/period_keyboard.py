@@ -1,7 +1,7 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 
-def get_period() -> ReplyKeyboardMarkup:
+def get_period_keyboard() -> ReplyKeyboardMarkup:
     kb = [
         [
             KeyboardButton(text="Сейчас"),

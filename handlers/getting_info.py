@@ -1,13 +1,14 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from handlers.common import States
+from dotenv import load_dotenv, find_dotenv
 import aiohttp
 import os
-from dotenv import load_dotenv, find_dotenv
 import datetime
 
-from keyboards.period_keyboard import get_period
+from keyboards.period_keyboard import get_period_keyboard
+from keyboards.weather_keyboard import get_weather_keyboard
+from handlers.common import States
 
 load_dotenv(find_dotenv())
 router = Router()
@@ -50,7 +51,7 @@ async def choosing_city(message: Message, state: FSMContext):
                             await state.update_data(city_id=city_id)
                             await state.set_state(States.getting_period)
 
-                            await message.answer("Выберите промежуток", reply_markup=get_period())
+                            await message.answer("Выберите промежуток", reply_markup=get_period_keyboard())
                         elif json_body["response"]["total"] == 0:
                             await message.answer("Город не найден, попробуйте еще раз")
                     except KeyError:
@@ -93,4 +94,6 @@ async def choosing_period(message: Message, state: FSMContext):
                      f'Давление: {pressure} мм рт. ст.\n' \
                      f'Ветер: {wind_dict[int(wind_direction)]} {wind_speed} м/с\n' + '*' * 31 + \
                      f'\n\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
-    await message.answer(weather_result, parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
+    await state.set_state(States.getting_weather)
+    await message.answer(weather_result, parse_mode="HTML")
+    await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())

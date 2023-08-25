@@ -1,7 +1,7 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 
-def get_weather() -> ReplyKeyboardMarkup:
+def get_weather_keyboard() -> ReplyKeyboardMarkup:
     kb = [
         [KeyboardButton(text="Узнать погоду")],
     ]
