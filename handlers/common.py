@@ -23,7 +23,7 @@ async def cmd_start(message: Message, state: FSMContext):
     await state.set_state(States.getting_weather)
 
 
-@router.message(States.getting_weather, F.text.lower() == "чтобы узнать погоду, нажмите на кнопку")
+@router.message(States.getting_weather, F.text.lower() == "узнать погоду")
 async def right_choice(message: Message, state: FSMContext):
     await message.answer("Введите ваш город:", reply_markup=ReplyKeyboardRemove())
     await state.set_state(States.getting_city)
