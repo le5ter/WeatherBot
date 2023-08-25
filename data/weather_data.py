@@ -16,25 +16,29 @@ weather_dict_3d = {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         2: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         3: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         4: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
     },
     2: {
@@ -42,25 +46,29 @@ weather_dict_3d = {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         2: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         3: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         4: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
     },
     3: {
@@ -68,25 +76,29 @@ weather_dict_3d = {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         2: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         3: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         },
         4: {
             "temperature": 0,
             "wind_direction": 0,
             "wind_speed": 0,
-            "precipitation_amount": 0
+            "precipitation_amount": 0,
+            "humidity": 0
         }
     }
 }

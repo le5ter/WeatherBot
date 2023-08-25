@@ -108,9 +108,10 @@ async def choosing_period(message: Message, state: FSMContext):
         month = date[5:7]
         day = date[8:]
         return f'{day}-{month}-{year}'
-    day1 = format_data(json_body['response'][0]['date']['local'][:10])
-    day2 = format_data(json_body['response'][4]['date']['local'][:10])
-    day3 = format_data(json_body['response'][8]['date']['local'][:10])
+
+    day1 = "Дата: " + format_data(json_body['response'][0]['date']['local'][:10])
+    day2 = "Дата: " + format_data(json_body['response'][4]['date']['local'][:10])
+    day3 = "Дата: " + format_data(json_body['response'][8]['date']['local'][:10])
 
     number = 0
     for i in range(1, 4):
@@ -121,59 +122,72 @@ async def choosing_period(message: Message, state: FSMContext):
             wdata.weather_dict_3d[i][j]['wind_speed'] = json_body['response'][number]['wind']['speed']['m_s']
             wdata.weather_dict_3d[i][j]['precipitation_amount'] = json_body['response'][number]['precipitation'][
                 'amount']
+            wdata.weather_dict_3d[i][j]['humidity'] = json_body['response'][number]['humidity']['percent']
             number += 1
 
     weather_result = f'Город: {city}\n' \
-                     f'Дата: {day1}\n' \
+                     f'{day1:^60}\n' \
                      f'\U0001F311Ночь: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[1][1]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[1][1]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][1]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[1][1]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[1][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с\n' \
                      f'\U0001F316Утро: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[1][2]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[1][2]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][2]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[1][2]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[1][2]["wind_direction"]]} {wdata.weather_dict_3d[1][2]["wind_speed"]} м/с\n' \
                      f'\U00002600День: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[1][3]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[1][3]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][3]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[1][3]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[1][3]["wind_direction"]]} {wdata.weather_dict_3d[1][3]["wind_speed"]} м/с\n' \
                      f'\U0001F312Вечер: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[1][4]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[1][4]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[1][4]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[1][4]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[1][4]["wind_direction"]]} {wdata.weather_dict_3d[1][4]["wind_speed"]} м/с\n' \
-                     f'Дата: {day2}\n' \
+                     f'{day2:^60}\n' \
                      f'\U0001F311Ночь: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[2][1]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[2][1]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][1]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[2][1]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[2][1]["wind_direction"]]} {wdata.weather_dict_3d[2][1]["wind_speed"]} м/с\n' \
                      f'\U0001F316Утро: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[2][2]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[2][2]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][2]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[2][2]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[2][2]["wind_direction"]]} {wdata.weather_dict_3d[2][2]["wind_speed"]} м/с\n' \
                      f'\U00002600День: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[2][3]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[2][3]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][3]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[2][3]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[2][3]["wind_direction"]]} {wdata.weather_dict_3d[2][3]["wind_speed"]} м/с\n' \
                      f'\U0001F312Вечер: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[2][4]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[2][4]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[2][4]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[2][4]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[2][4]["wind_direction"]]} {wdata.weather_dict_3d[2][4]["wind_speed"]} м/с\n' \
-                     f'Дата: {day3}\n' \
+                     f'{day3:^60}\n' \
                      f'\U0001F311Ночь: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[3][1]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[3][1]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][1]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[3][1]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[3][1]["wind_direction"]]} {wdata.weather_dict_3d[3][1]["wind_speed"]} м/с\n' \
                      f'\U0001F316Утро: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[3][2]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[3][2]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][2]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[3][2]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[3][2]["wind_direction"]]} {wdata.weather_dict_3d[3][2]["wind_speed"]} м/с\n' \
                      f'\U00002600День: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[3][3]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[3][3]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][3]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[3][3]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[3][3]["wind_direction"]]} {wdata.weather_dict_3d[3][3]["wind_speed"]} м/с\n' \
                      f'\U0001F312Вечер: ' \
                      f'\U0001F321 {wdata.weather_dict_3d[3][4]["temperature"]}°C ' \
-                     f'\U0001F327 {wdata.weather_dict_3d[3][4]["precipitation_amount"]} мм\n' \
+                     f'\U0001F327 {wdata.weather_dict_3d[3][4]["precipitation_amount"]} мм ' \
+                     f'\U0001F4A7 {wdata.weather_dict_3d[3][4]["humidity"]}%\n' \
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[3][4]["wind_direction"]]} {wdata.weather_dict_3d[3][4]["wind_speed"]} м/с\n' \
                      f'\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
