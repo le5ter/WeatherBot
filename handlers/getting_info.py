@@ -1,11 +1,12 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message
 from dotenv import load_dotenv, find_dotenv
 import aiohttp
 import os
 import datetime
 
+import data.weather_data as wdata
 from keyboards.period_keyboard import get_period_keyboard
 from keyboards.weather_keyboard import get_weather_keyboard
 from handlers.common import States
@@ -15,20 +16,11 @@ router = Router()
 
 url = "https://api.gismeteo.net/v2/search/cities/?query="
 url2 = "https://api.gismeteo.net/v2/weather/current/"
+url3 = "https://api.gismeteo.net/v2/weather/forecast/by_day_part/"
 headers = {
     "X-Gismeteo-Token": f'{os.getenv("API_TOKEN")}',
     "Accept-Encoding": "gzip"
 }
-
-wind_dict = {0: "Спокойный",
-             1: "Северный",
-             2: "Северо-Восточный",
-             3: "Восточный",
-             4: "Юго-восточный",
-             5: "Южный",
-             6: "Юго-западный",
-             7: "Западный",
-             8: "Северо-Западный"}
 
 
 @router.message(States.getting_city)
@@ -92,8 +84,94 @@ async def choosing_period(message: Message, state: FSMContext):
                      f'Температура воды: {water_temperature}°C\n' \
                      f'Влажность: {humidity}%\n' \
                      f'Давление: {pressure} мм рт. ст.\n' \
-                     f'Ветер: {wind_dict[int(wind_direction)]} {wind_speed} м/с\n' + '*' * 31 + \
+                     f'Ветер: {wdata.wind_dict[int(wind_direction)]} {wind_speed} м/с\n' + '*' * 31 + \
                      f'\n\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
     await state.set_state(States.getting_weather)
     await message.answer(weather_result, parse_mode="HTML")
+    await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
+
+
+@router.message(States.getting_period, F.text.lower() == "3 дня")
+async def choosing_period(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    city_id: int = user_data['city_id']
+
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(f"{url3}{city_id}/?&days=3") as response:
+            json_body = await response.json()
+    city: str = user_data['city_name']
+    now = datetime.datetime.now()
+    format_time = f'{now:%d-%m-%Y}'
+    number = 0
+
+    for i in range(1, 4):
+        for j in range(1, 5):
+            wdata.weather_dict_3d[i][j]['temperature'] = json_body['response'][number]['temperature']['air']['C']
+            wdata.weather_dict_3d[i][j]['wind_direction'] = json_body['response'][number]['wind']['direction']['scale_8']
+            wdata.weather_dict_3d[i][j]['wind_speed'] = json_body['response'][number]['wind']['speed']['m_s']
+            wdata.weather_dict_3d[i][j]['precipitation_amount'] = json_body['response'][number]['precipitation']['amount']
+            number += 1
+
+    weather_result1 = f'Город: {city}\n' \
+                      f'Дата: {format_time}\n' \
+                      f'\U0001F311Ночь:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[1][1]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[1][1]["precipitation_amount"]}' \
+                      f'\U0001F316Утро:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[1][2]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][2]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[1][2]["precipitation_amount"]}' \
+                      f'\U00002600День:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[1][3]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][3]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[1][3]["precipitation_amount"]}' \
+                      f'\U0001F312Вечер:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[1][4]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[1][4]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[1][4]["precipitation_amount"]}'
+
+    weather_result2 = f'Город: {city}\n' \
+                      f'Дата: {format_time}\n' \
+                      f'\U0001F311Ночь:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[2][1]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[2][1]["precipitation_amount"]}' \
+                      f'\U0001F316Утро:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[2][2]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][2]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[2][2]["precipitation_amount"]}' \
+                      f'\U00002600День:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[2][3]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][3]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[2][3]["precipitation_amount"]}' \
+                      f'\U0001F312Вечер:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[2][4]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[2][4]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[2][4]["precipitation_amount"]}'
+
+    weather_result3 = f'Город: {city}\n' \
+                      f'Дата: {format_time}\n' \
+                      f'\U0001F311Ночь:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[3][1]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][1]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[3][1]["precipitation_amount"]}' \
+                      f'\U0001F316Утро:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[3][2]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][2]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[3][2]["precipitation_amount"]}' \
+                      f'\U00002600День:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[3][3]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][3]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[3][3]["precipitation_amount"]}' \
+                      f'\U0001F312Вечер:\n' \
+                      f'Температура воздуха: {wdata.weather_dict_3d[3][4]["temperature"]}°C ' \
+                      f'Ветер: {wdata.wind_dict[wdata.weather_dict_3d[3][4]["wind_direction"]]} {wdata.weather_dict_3d[1][1]["wind_speed"]} м/с ' \
+                      f'Кол-во осадков: {wdata.weather_dict_3d[3][4]["precipitation_amount"]}' \
+                      f'\n\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
+
+    await state.set_state(States.getting_weather)
+    await message.answer(weather_result1)
+    await message.answer(weather_result2)
+    await message.answer(weather_result3, parse_mode="HTML")
     await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
