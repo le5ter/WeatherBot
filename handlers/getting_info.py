@@ -1,11 +1,13 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardRemove, ReplyKeyboardMarkup
-from handlers.common import GetInfo
+from aiogram.types import Message, ReplyKeyboardRemove
+from handlers.common import States
 import aiohttp
 import os
 from dotenv import load_dotenv, find_dotenv
 import datetime
+
+from keyboards.period_keyboard import get_period
 
 load_dotenv(find_dotenv())
 router = Router()
@@ -28,7 +30,7 @@ wind_dict = {0: "Спокойный",
              8: "Северо-Западный"}
 
 
-@router.message(GetInfo.getting_city)
+@router.message(States.getting_city)
 async def choosing_city(message: Message, state: FSMContext):
     input_city: str = message.text
     await state.update_data(input_city=input_city)
@@ -46,22 +48,9 @@ async def choosing_city(message: Message, state: FSMContext):
                         if json_body["response"]["total"] > 0:
                             city_id: int = json_body["response"]["items"][0]["id"]
                             await state.update_data(city_id=city_id)
-                            await state.set_state(GetInfo.getting_period)
+                            await state.set_state(States.getting_period)
 
-                            kb = [
-                                [
-                                    KeyboardButton(text="Сейчас"),
-                                    KeyboardButton(text="Завтра"),
-                                    KeyboardButton(text="3 Дня")
-                                ],
-                            ]
-                            keyboard = ReplyKeyboardMarkup(
-                                keyboard=kb,
-                                resize_keyboard=True,
-                                input_field_placeholder="Выберите промежуток"
-                            )
-
-                            await message.answer("Выберите промежуток", reply_markup=keyboard)
+                            await message.answer("Выберите промежуток", reply_markup=get_period())
                         elif json_body["response"]["total"] == 0:
                             await message.answer("Город не найден, попробуйте еще раз")
                     except KeyError:
@@ -73,7 +62,7 @@ async def choosing_city(message: Message, state: FSMContext):
                     await message.answer("Ошибка сервера, попробуйте позже.")
 
 
-@router.message(GetInfo.getting_period, F.text.lower() == "сейчас")
+@router.message(States.getting_period, F.text.lower() == "сейчас")
 async def choosing_period(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']

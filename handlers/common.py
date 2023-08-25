@@ -8,7 +8,7 @@ from aiogram.fsm.state import StatesGroup, State
 router = Router()
 
 
-class GetInfo(StatesGroup):
+class States(StatesGroup):
     getting_city = State()
     checking_city = State()
     getting_period = State()
@@ -17,7 +17,7 @@ class GetInfo(StatesGroup):
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
     await message.answer("Введите ваш город:")
-    await state.set_state(GetInfo.getting_city)
+    await state.set_state(States.getting_city)
 
 
 @router.message(Command("clear"))
@@ -32,4 +32,4 @@ async def cmd_clear(message: Message, bot: Bot):
 
 @router.message(Command("restart"))
 async def cmd_restart(message: Message, state: FSMContext):
-    await state.set_state(GetInfo.getting_city)
+    await state.set_state(States.getting_city)
