@@ -180,3 +180,13 @@ async def choosing_period(message: Message, state: FSMContext):
     await state.set_state(States.getting_weather)
     await message.answer(weather_result, parse_mode="HTML")
     await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
+
+
+@router.message(States.getting_period, F.text.lower() == "завтра")
+async def choosing_period(message: Message, state: FSMContext):
+    await message.answer("Временно недоступно!")
+
+
+@router.message(States.getting_period)
+async def wrong_choice(message: Message, state: FSMContext):
+    await message.answer("Так не пойдет, нажмите на кнопку!")
