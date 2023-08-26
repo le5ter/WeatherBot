@@ -9,6 +9,7 @@ import datetime
 import data.weather_data as wdata
 from keyboards.period_keyboard import get_period_keyboard
 from keyboards.weather_keyboard import get_weather_keyboard
+from keyboards.next_choice_keyboard import get_next_choice_keyboard
 from handlers.common import States
 
 load_dotenv(find_dotenv())
@@ -52,7 +53,7 @@ async def getting_city(message: Message, state: FSMContext):
                             await state.update_data(city_name=city)
                             await state.set_state(States.getting_period)
 
-                            await message.answer("Выберите промежуток", reply_markup=get_period_keyboard())
+                            await message.answer("Выберите период", reply_markup=get_period_keyboard())
                         elif json_body["response"]["total"] == 0:
                             await message.answer("Город не найден, попробуйте еще раз")
                     except KeyError:
@@ -96,9 +97,9 @@ async def getting_current_weather(message: Message, state: FSMContext):
                      f'\U0001F32AВетер: {wdata.wind_dict[int(wind_direction)]} {wind_speed} м/с\n\n' \
                      f'Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
-    await state.set_state(States.getting_weather)
+    await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
 
 
 @router.message(States.getting_period, F.text.lower() == "3 дня")
@@ -193,9 +194,9 @@ async def getting_3d_weather(message: Message, state: FSMContext):
                      f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[3][4]["wind_direction"]]} {wdata.weather_dict_3d[3][4]["wind_speed"]} м/с\n' \
                      f'\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
-    await state.set_state(States.getting_weather)
+    await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
 
 
 @router.message(States.getting_period, F.text.lower() == "сегодня")
@@ -253,9 +254,9 @@ async def getting_1d_weather(message: Message, state: FSMContext):
                      f'\U0001F327 {wdata.weather_dict_1d[8]["precipitation_amount"]} мм\n' \
                      f'\nИнформация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
-    await state.set_state(States.getting_weather)
+    await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
 
 
 @router.message(States.getting_period)
