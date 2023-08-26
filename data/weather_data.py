@@ -10,6 +10,74 @@ wind_dict = {
     8: "Северо-Западный"
 }
 
+weather_dict_1d = {
+    "date": "",
+    1: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    2: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    3: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    4: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    5: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    6: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    7: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    },
+    8: {
+        "time": "",
+        "temperature": 0,
+        "wind_speed": 0,
+        "wind_direction": 0,
+        "pressure": 0,
+        "precipitation_amount": 0
+    }
+}
+
 weather_dict_3d = {
     1: {
         1: {

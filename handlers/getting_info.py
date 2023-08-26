@@ -17,10 +17,18 @@ router = Router()
 url = "https://api.gismeteo.net/v2/search/cities/?query="
 url2 = "https://api.gismeteo.net/v2/weather/current/"
 url3 = "https://api.gismeteo.net/v2/weather/forecast/by_day_part/"
+url4 = "https://api.gismeteo.net/v2/weather/forecast/"
 headers = {
     "X-Gismeteo-Token": f'{os.getenv("API_TOKEN")}',
     "Accept-Encoding": "gzip"
 }
+
+
+def format_data(date: str) -> str:
+    year = date[:4]
+    month = date[5:7]
+    day = date[8:]
+    return f'{day}-{month}-{year}'
 
 
 @router.message(States.getting_city)
@@ -94,7 +102,7 @@ async def getting_current_weather(message: Message, state: FSMContext):
 
 
 @router.message(States.getting_period, F.text.lower() == "3 дня")
-async def choosing_period(message: Message, state: FSMContext):
+async def getting_3d_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
 
@@ -102,12 +110,6 @@ async def choosing_period(message: Message, state: FSMContext):
         async with session.get(f"{url3}{city_id}/?&days=3") as response:
             json_body = await response.json()
     city: str = user_data['city_name']
-
-    def format_data(date: str) -> str:
-        year = date[:4]
-        month = date[5:7]
-        day = date[8:]
-        return f'{day}-{month}-{year}'
 
     day1 = "Дата: " + format_data(json_body['response'][0]['date']['local'][:10])
     day2 = "Дата: " + format_data(json_body['response'][4]['date']['local'][:10])
@@ -196,9 +198,64 @@ async def choosing_period(message: Message, state: FSMContext):
     await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
 
 
-@router.message(States.getting_period, F.text.lower() == "завтра")
-async def choosing_period(message: Message, state: FSMContext):
-    await message.answer("Временно недоступно!")
+@router.message(States.getting_period, F.text.lower() == "сегодня")
+async def getting_1d_weather(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    city_id: int = user_data['city_id']
+
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(f"{url4}{city_id}/?days=1") as response:
+            json_body = await response.json()
+    city: str = user_data['city_name']
+
+    wdata.weather_dict_1d['date'] = format_data(json_body['response'][1]['date']['local'][:10])
+
+    for i in range(1, 9):
+        wdata.weather_dict_1d[i]['time'] = json_body['response'][i - 1]['date']['local'][11:16]
+        wdata.weather_dict_1d[i]['temperature'] = json_body['response'][i - 1]['temperature']['air']['C']
+        wdata.weather_dict_1d[i]['wind_speed'] = json_body['response'][i - 1]['wind']['speed']['m_s']
+        wdata.weather_dict_1d[i]['wind_direction'] = json_body['response'][i - 1]['wind']['direction']['scale_8']
+        wdata.weather_dict_1d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
+        wdata.weather_dict_1d[i]['pressure'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']
+
+    weather_result = f'Город: {city}\nДата: {wdata.weather_dict_1d["date"]}\n' \
+                     f'{wdata.weather_dict_1d[1]["time"]}: \U0001F321{wdata.weather_dict_1d[1]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[1]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[1]["wind_direction"]]} {wdata.weather_dict_1d[1]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[1]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[2]["time"]}: \U0001F321{wdata.weather_dict_1d[2]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[2]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[2]["wind_direction"]]} {wdata.weather_dict_1d[2]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[2]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[3]["time"]}: \U0001F321{wdata.weather_dict_1d[3]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[3]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[3]["wind_direction"]]} {wdata.weather_dict_1d[3]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[3]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[4]["time"]}: \U0001F321{wdata.weather_dict_1d[4]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[4]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[4]["wind_direction"]]} {wdata.weather_dict_1d[4]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[4]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[5]["time"]}: \U0001F321{wdata.weather_dict_1d[5]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[5]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[5]["wind_direction"]]} {wdata.weather_dict_1d[5]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[5]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[6]["time"]}: \U0001F321{wdata.weather_dict_1d[6]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[6]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[6]["wind_direction"]]} {wdata.weather_dict_1d[6]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[6]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[7]["time"]}: \U0001F321{wdata.weather_dict_1d[7]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[7]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[7]["wind_direction"]]} {wdata.weather_dict_1d[7]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[7]["precipitation_amount"]} мм\n' \
+                     f'{wdata.weather_dict_1d[8]["time"]}: \U0001F321{wdata.weather_dict_1d[8]["temperature"]}°C ' \
+                     f'\U0001F5FB{wdata.weather_dict_1d[8]["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A{wdata.wind_dict[wdata.weather_dict_1d[8]["wind_direction"]]} {wdata.weather_dict_1d[8]["wind_speed"]} м/с ' \
+                     f'\U0001F327 {wdata.weather_dict_1d[8]["precipitation_amount"]} мм\n' \
+                     f'\nИнформация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
+
+    await state.set_state(States.getting_weather)
+    await message.answer(weather_result, parse_mode="HTML")
+    await message.answer("Чтобы узнать погоду еще раз, нажмите на кнопку", reply_markup=get_weather_keyboard())
 
 
 @router.message(States.getting_period)
