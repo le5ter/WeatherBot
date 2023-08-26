@@ -13,7 +13,7 @@ def get_period_keyboard() -> ReplyKeyboardMarkup:
     keyboard = ReplyKeyboardMarkup(
         keyboard=kb,
         resize_keyboard=True,
-        input_field_placeholder="Выберите промежуток"
+        input_field_placeholder="Выберите период"
     )
 
     return keyboard
