@@ -241,6 +241,7 @@ async def getting_3d_weather(message: Message, state: FSMContext):
                 weather_result += f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[i][j]["wind_direction"]]} {wdata.weather_dict_3d[i][j]["wind_speed"]} м/с\n\n'
             else:
                 weather_result += f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_3d[i][j]["wind_direction"]]} {wdata.weather_dict_3d[i][j]["wind_speed"]} м/с\n'
+
     weather_result += f'Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
     await state.set_state(States.next_choice)
@@ -271,13 +272,13 @@ async def getting_1d_weather(message: Message, state: FSMContext):
     weather_result = f'Город: {city}\n'
 
     for i in range(1, 8):
-        weather_result += f'{wdata.weather_dict_7d[i]["date"]:^60}\n' \
+        weather_result += f'{wdata.weather_dict_7d[i]["date"]}\n\n' \
                           f'\U0001F321 {wdata.weather_dict_7d[i]["temperature_min"]} - {wdata.weather_dict_7d[i]["temperature_max"]}°C ' \
                           f'\U0001F327 {wdata.weather_dict_7d[i]["precipitation_amount"]} мм\n' \
                           f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_7d[i]["wind_direction"]]} {wdata.weather_dict_7d[i]["wind_speed_avg"]} м/с\n' \
-                          f'\U0001F5FB {wdata.weather_dict_7d[i]["pressure_min"]} - {wdata.weather_dict_7d[i]["pressure_max"]} мм рт. ст. \n'
+                          f'\U0001F5FB {wdata.weather_dict_7d[i]["pressure_min"]} - {wdata.weather_dict_7d[i]["pressure_max"]} мм рт. ст.\n\n'
 
-    weather_result += f'\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
+    weather_result += f'Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
