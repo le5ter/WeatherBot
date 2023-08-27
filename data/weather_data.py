@@ -170,3 +170,78 @@ weather_dict_3d = {
         }
     }
 }
+
+weather_dict_7d = {
+
+    1: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+    2: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+    3: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+    4: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+    5: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+    6: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+    7: {
+        "date": "",
+        "temperature_max": 0,
+        "temperature_min": 0,
+        "wind_speed_avg": 0,
+        "wind_direction": 0,
+        "pressure_max": 0,
+        "pressure_min": 0,
+        "precipitation_amount": 0
+    },
+
+}

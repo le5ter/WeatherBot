@@ -18,6 +18,7 @@ url = "https://api.gismeteo.net/v2/search/cities/?query="
 url2 = "https://api.gismeteo.net/v2/weather/current/"
 url3 = "https://api.gismeteo.net/v2/weather/forecast/by_day_part/"
 url4 = "https://api.gismeteo.net/v2/weather/forecast/"
+url5 = "https://api.gismeteo.net/v2/weather/forecast/aggregate/"
 headers = {
     "X-Gismeteo-Token": f'{os.getenv("API_TOKEN")}',
     "Accept-Encoding": "gzip"
@@ -322,6 +323,40 @@ async def getting_3d_weather(message: Message, state: FSMContext):
 async def if_7days(message: Message, state: FSMContext):
     await state.set_state(States.next_choice)
     await message.answer("Временно недоступно, выберите дальнейшее действие.", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
+
+
+@router.message(States.getting_period, F.text.lower() == "7 дней")
+async def getting_1d_weather(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    city_id: int = user_data['city_id']
+
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(f"{url5}{city_id}/?days=7") as response:
+            json_body = await response.json()
+    city: str = user_data['city_name']
+
+    for i in range(1, 8):
+        wdata.weather_dict_7d[i]['date'] = json_body['response'][i - 1]['date']['local']
+        wdata.weather_dict_7d[i]['temperature_max'] = json_body['response'][i - 1]['temperature']['air']['max']['C']
+        wdata.weather_dict_7d[i]['temperature_min'] = json_body['response'][i - 1]['temperature']['air']['min']['C']
+        wdata.weather_dict_7d[i]['wind_speed_avg'] = json_body['response'][i - 1]['wind']['speed']['max']['m_s']
+        wdata.weather_dict_7d[i]['wind_direction'] = json_body['response'][i - 1]['wind']['direction']['max']['scale_8']
+        wdata.weather_dict_7d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
+        wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
+        wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
+
+    weather_result = f'Город: {city}\n' \
+                     f'{wdata.weather_dict_7d[1]["date"]}\n' \
+                     f'{wdata.weather_dict_7d[2]["date"]}\n' \
+                     f'{wdata.weather_dict_7d[3]["date"]}\n' \
+                     f'{wdata.weather_dict_7d[4]["date"]}\n' \
+                     f'{wdata.weather_dict_7d[5]["date"]}\n' \
+                     f'{wdata.weather_dict_7d[6]["date"]}\n' \
+                     f'{wdata.weather_dict_7d[7]["date"]}\n'
+
+    await state.set_state(States.next_choice)
+    await message.answer(weather_result, parse_mode="HTML")
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
 
 
 @router.message(States.getting_period)
