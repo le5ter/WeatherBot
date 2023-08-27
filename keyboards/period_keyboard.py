@@ -1,19 +1,23 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import KeyboardButton
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 
-def get_period_keyboard() -> ReplyKeyboardMarkup:
-    kb = [
-        [
-            KeyboardButton(text="Сейчас"),
-            KeyboardButton(text="Сегодня"),
-            KeyboardButton(text="3 Дня")
-        ],
-    ]
+def get_period_keyboard() -> ReplyKeyboardBuilder:
+    builder = ReplyKeyboardBuilder()
 
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=kb,
-        resize_keyboard=True,
-        input_field_placeholder="Выберите период"
+    builder.row(
+        KeyboardButton(text="Сейчас"),
+        KeyboardButton(text="Сегодня"),
+        KeyboardButton(text="Завтра")
     )
 
-    return keyboard
+    builder.row(
+        KeyboardButton(text="3 Дня"),
+        KeyboardButton(text="7 Дней")
+    )
+
+    builder.row(
+        KeyboardButton(text="Выйти")
+    )
+
+    return builder

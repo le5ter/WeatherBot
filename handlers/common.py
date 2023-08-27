@@ -62,7 +62,7 @@ async def new_city(message: Message, state: FSMContext):
 
 @router.message(States.next_choice, F.text.lower() == "новый период")
 async def new_city(message: Message, state: FSMContext):
-    await message.answer("Выберите период", reply_markup=get_period_keyboard())
+    await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True))
     await state.set_state(States.getting_period)
 
 
