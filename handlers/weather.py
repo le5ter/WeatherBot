@@ -320,12 +320,6 @@ async def getting_3d_weather(message: Message, state: FSMContext):
 
 
 @router.message(States.getting_period, F.text.lower() == "7 дней")
-async def if_7days(message: Message, state: FSMContext):
-    await state.set_state(States.next_choice)
-    await message.answer("Временно недоступно, выберите дальнейшее действие.", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
-
-
-@router.message(States.getting_period, F.text.lower() == "7 дней")
 async def getting_1d_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
@@ -336,7 +330,7 @@ async def getting_1d_weather(message: Message, state: FSMContext):
     city: str = user_data['city_name']
 
     for i in range(1, 8):
-        wdata.weather_dict_7d[i]['date'] = json_body['response'][i - 1]['date']['local']
+        wdata.weather_dict_7d[i]['date'] = "Дата: " + format_data(json_body['response'][i - 1]['date']['local'])
         wdata.weather_dict_7d[i]['temperature_max'] = json_body['response'][i - 1]['temperature']['air']['max']['C']
         wdata.weather_dict_7d[i]['temperature_min'] = json_body['response'][i - 1]['temperature']['air']['min']['C']
         wdata.weather_dict_7d[i]['wind_speed_avg'] = json_body['response'][i - 1]['wind']['speed']['max']['m_s']
@@ -345,14 +339,16 @@ async def getting_1d_weather(message: Message, state: FSMContext):
         wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
         wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
 
-    weather_result = f'Город: {city}\n' \
-                     f'{wdata.weather_dict_7d[1]["date"]}\n' \
-                     f'{wdata.weather_dict_7d[2]["date"]}\n' \
-                     f'{wdata.weather_dict_7d[3]["date"]}\n' \
-                     f'{wdata.weather_dict_7d[4]["date"]}\n' \
-                     f'{wdata.weather_dict_7d[5]["date"]}\n' \
-                     f'{wdata.weather_dict_7d[6]["date"]}\n' \
-                     f'{wdata.weather_dict_7d[7]["date"]}\n'
+    weather_result = f'Город: {city}\n'
+
+    for i in range(1, 8):
+        weather_result += f'{wdata.weather_dict_7d[i]["date"]:^60}\n' \
+                          f'\U0001F321 {wdata.weather_dict_7d[i]["temperature_min"]} - {wdata.weather_dict_7d[i]["temperature_max"]}°C ' \
+                          f'\U0001F327 {wdata.weather_dict_7d[i]["precipitation_amount"]} мм\n' \
+                          f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_7d[i]["wind_direction"]]} {wdata.weather_dict_7d[i]["wind_speed_avg"]} м/с\n' \
+                          f'\U0001F5FB {wdata.weather_dict_7d[i]["pressure_min"]} - {wdata.weather_dict_7d[i]["pressure_max"]} мм рт. ст. \n'
+
+    weather_result += f'\n Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
