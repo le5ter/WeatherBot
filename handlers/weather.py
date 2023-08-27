@@ -6,6 +6,7 @@ import aiohttp
 import os
 
 import data.weather_data as wdata
+import data.smiles as smdata
 from keyboards.period_keyboard import get_period_keyboard
 from keyboards.next_choice_keyboard import get_next_choice_keyboard
 from handlers.common import States
@@ -118,10 +119,10 @@ async def getting_1d_weather(message: Message, state: FSMContext):
         wdata.weather_dict_1d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
         wdata.weather_dict_1d[i]['pressure'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']
 
-    weather_result = f'Город: {city}\nДата: {wdata.weather_dict_1d["date"]}\n'
+    weather_result = f'\U0001F30E Город: {city}\n\U0001F5D3 Дата: {wdata.weather_dict_1d["date"]}\n'
 
     for i in range(1, 9):
-        weather_result += f'{wdata.weather_dict_1d[i]["time"]}:\n\U0001F321 {wdata.weather_dict_1d[i]["temperature"]}°C ' \
+        weather_result += f'{smdata.smiles[i]} {wdata.weather_dict_1d[i]["time"]}:\n\U0001F321 {wdata.weather_dict_1d[i]["temperature"]}°C ' \
                           f'\U0001F5FB {wdata.weather_dict_1d[i]["pressure"]} мм рт. ст.\n' \
                           f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_1d[i]["wind_direction"]]} {wdata.weather_dict_1d[i]["wind_speed"]} м/с ' \
                           f'\U0001F327{wdata.weather_dict_1d[i]["precipitation_amount"]} мм\n'
@@ -153,10 +154,10 @@ async def getting_1d_weather(message: Message, state: FSMContext):
         wdata.weather_dict_1d[i]['precipitation_amount'] = json_body['response'][i + 7]['precipitation']['amount']
         wdata.weather_dict_1d[i]['pressure'] = json_body['response'][i + 7]['pressure']['mm_hg_atm']
 
-    weather_result = f'Город: {city}\nДата: {wdata.weather_dict_1d["date"]}\n'
+    weather_result = f'\U0001F30E Город: {city}\n\U0001F5D3 Дата: {wdata.weather_dict_1d["date"]}\n'
 
     for i in range(1, 9):
-        weather_result += f'{wdata.weather_dict_1d[i]["time"]}:\n\U0001F321 {wdata.weather_dict_1d[i]["temperature"]}°C ' \
+        weather_result += f'{smdata.smiles[i]} {wdata.weather_dict_1d[i]["time"]}:\n\U0001F321 {wdata.weather_dict_1d[i]["temperature"]}°C ' \
                           f'\U0001F5FB {wdata.weather_dict_1d[i]["pressure"]} мм рт. ст.\n' \
                           f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_1d[i]["wind_direction"]]} {wdata.weather_dict_1d[i]["wind_speed"]} м/с ' \
                           f'\U0001F327{wdata.weather_dict_1d[i]["precipitation_amount"]} мм\n'
@@ -190,11 +191,11 @@ async def getting_3d_weather(message: Message, state: FSMContext):
             wdata.weather_dict_3d[i][j]['humidity'] = json_body['response'][number]['humidity']['percent']
             number += 1
 
-    weather_result = f'Город: {city}\n'
+    weather_result = f'\U0001F30E Город: {city}\n'
 
     date_i = 0
     for i in range(1, 4):
-        weather_result += "Дата: " + format_data(json_body['response'][date_i]['date']['local'][:10]) + "\n\n"
+        weather_result += "\U0001F5D3 Дата: " + format_data(json_body['response'][date_i]['date']['local'][:10]) + "\n\n"
         date_i += 4
         for j in range(1, 5):
             if j == 1:
@@ -231,7 +232,7 @@ async def getting_1d_weather(message: Message, state: FSMContext):
     city: str = user_data['city_name']
 
     for i in range(1, 8):
-        wdata.weather_dict_7d[i]['date'] = "Дата: " + format_data(json_body['response'][i - 1]['date']['local'])
+        wdata.weather_dict_7d[i]['date'] = format_data(json_body['response'][i - 1]['date']['local'])
         wdata.weather_dict_7d[i]['temperature_max'] = json_body['response'][i - 1]['temperature']['air']['max']['C']
         wdata.weather_dict_7d[i]['temperature_min'] = json_body['response'][i - 1]['temperature']['air']['min']['C']
         wdata.weather_dict_7d[i]['wind_speed_avg'] = json_body['response'][i - 1]['wind']['speed']['max']['m_s']
@@ -240,10 +241,10 @@ async def getting_1d_weather(message: Message, state: FSMContext):
         wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
         wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
 
-    weather_result = f'Город: {city}\n'
+    weather_result = f'\U0001F30E Город: {city}\n'
 
     for i in range(1, 8):
-        weather_result += f'{wdata.weather_dict_7d[i]["date"]}\n\n' \
+        weather_result += f'\U0001F5D3 Дата: {wdata.weather_dict_7d[i]["date"]}\n\n' \
                           f'\U0001F321 {wdata.weather_dict_7d[i]["temperature_min"]} - {wdata.weather_dict_7d[i]["temperature_max"]}°C ' \
                           f'\U0001F327 {wdata.weather_dict_7d[i]["precipitation_amount"]} мм\n' \
                           f'\U0001F32A {wdata.wind_dict[wdata.weather_dict_7d[i]["wind_direction"]]} {wdata.weather_dict_7d[i]["wind_speed_avg"]} м/с\n' \
