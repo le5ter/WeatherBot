@@ -10,6 +10,17 @@ wind_dict = {
     8: "Северо-Западный"
 }
 
+weather_dict_now = {
+    "date": "",
+    "description": "",
+    "air_temperature": 0,
+    "water_temperature": 0,
+    "humidity": 0,
+    "pressure": 0,
+    "wind_direction": 0,
+    "wind_speed": 0
+}
+
 weather_dict_1d = {
     "date": "",
     1: {

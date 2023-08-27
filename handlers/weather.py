@@ -4,7 +4,6 @@ from aiogram.types import Message
 from dotenv import load_dotenv, find_dotenv
 import aiohttp
 import os
-import datetime
 
 import data.weather_data as wdata
 from keyboards.period_keyboard import get_period_keyboard
@@ -69,32 +68,29 @@ async def getting_city(message: Message, state: FSMContext):
 async def getting_current_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
+    city: str = user_data['city_name']
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(f"{url2}{city_id}") as response:
             json_body = await response.json()
-    city: str = user_data['city_name']
-    offset = json_body['response']['date']['time_zone_offset']
-    offset /= 60
-    tz = datetime.timezone(datetime.timedelta(hours=offset), name='МСК')
-    now = datetime.datetime.now(tz=tz)
-    format_time = f'{now:%d-%m-%Y %H:%M}'
-    description = json_body['response']['description']['full']
-    air_temperature = json_body['response']['temperature']['air']['C']
-    water_temperature = json_body['response']['temperature']['water']['C']
-    humidity = json_body['response']['humidity']['percent']
-    pressure = json_body['response']['pressure']['mm_hg_atm']
-    wind_direction = json_body['response']['wind']['direction']['scale_8']
-    wind_speed = json_body['response']['wind']['speed']['m_s']
 
-    weather_result = f'\U0001F30EГород: {city}\n' \
-                     f'\U0001F5D3Дата: {format_time}\n' \
-                     f'{description}\n' \
-                     f'\U0001F321Температура воздуха: {air_temperature}°C\n' \
-                     f'\U0001F30AТемпература воды: {water_temperature}°C\n' \
-                     f'\U0001F4A7Влажность: {humidity}%\n' \
-                     f'\U0001F5FBДавление: {pressure} мм рт. ст.\n' \
-                     f'\U0001F32AВетер: {wdata.wind_dict[int(wind_direction)]} {wind_speed} м/с\n\n' \
+    wdata.weather_dict_now['date'] = format_data(json_body['response']['date']['local'][:10]) + " " + json_body['response']['date']['local'][11:16]
+    wdata.weather_dict_now['description'] = json_body['response']['description']['full']
+    wdata.weather_dict_now['air_temperature'] = json_body['response']['temperature']['air']['C']
+    wdata.weather_dict_now['water_temperature'] = json_body['response']['temperature']['water']['C']
+    wdata.weather_dict_now['humidity'] = json_body['response']['humidity']['percent']
+    wdata.weather_dict_now['pressure'] = json_body['response']['pressure']['mm_hg_atm']
+    wdata.weather_dict_now['wind_direction'] = json_body['response']['wind']['direction']['scale_8']
+    wdata.weather_dict_now['wind_speed'] = json_body['response']['wind']['speed']['m_s']
+
+    weather_result = f'\U0001F30E Город: {city}\n' \
+                     f'\U0001F5D3 Дата: {wdata.weather_dict_now["date"]}\n' \
+                     f'\U0001F4CB {wdata.weather_dict_now["description"]}\n' \
+                     f'\U0001F321 Температура воздуха: {wdata.weather_dict_now["air_temperature"]}°C\n' \
+                     f'\U0001F30A Температура воды: {wdata.weather_dict_now["water_temperature"]}°C\n' \
+                     f'\U0001F4A7 Влажность: {wdata.weather_dict_now["humidity"]}%\n' \
+                     f'\U0001F5FB Давление: {wdata.weather_dict_now["pressure"]} мм рт. ст.\n' \
+                     f'\U0001F32A Ветер: {wdata.wind_dict[wdata.weather_dict_now["wind_direction"]]} {wdata.weather_dict_now["wind_speed"]} м/с\n\n' \
                      f'Информация о погоде взята с сайта <a href="gismeteo.ru">Gismeteo</a>'
 
     await state.set_state(States.next_choice)
@@ -261,5 +257,5 @@ async def getting_1d_weather(message: Message, state: FSMContext):
 
 
 @router.message(States.getting_period)
-async def wrong_choice(message: Message, state: FSMContext):
+async def wrong_choice(message: Message):
     await message.answer("Так не пойдет, нажмите на кнопку!")
