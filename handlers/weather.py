@@ -219,6 +219,7 @@ async def getting_3d_weather(message: Message, state: FSMContext):
                     'amount']
                 wdata.weather_dict_3d[i][j]['humidity'] = json_body['response'][number]['humidity']['percent']
                 number += 1
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
 
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
@@ -276,6 +277,7 @@ async def getting_1d_weather(message: Message, state: FSMContext):
             wdata.weather_dict_7d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
             wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
             wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
 
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
