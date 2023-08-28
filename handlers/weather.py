@@ -4,11 +4,13 @@ from aiogram.types import Message
 from dotenv import load_dotenv, find_dotenv
 import aiohttp
 import os
+import logging
 
 import data.weather_data as wdata
 import data.smiles as smdata
 from keyboards.period_keyboard import get_period_keyboard
 from keyboards.next_choice_keyboard import get_next_choice_keyboard
+from keyboards.weather_keyboard import get_weather_keyboard
 from handlers.common import States
 
 load_dotenv(find_dotenv())
@@ -35,6 +37,7 @@ def format_data(date: str) -> str:
 @router.message(States.getting_city)
 async def getting_city(message: Message, state: FSMContext):
     input_city: str = message.text
+    user_id: float = message.from_user.id
     await state.update_data(input_city=input_city)
 
     if input_city.isdigit():
@@ -43,26 +46,31 @@ async def getting_city(message: Message, state: FSMContext):
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(url + input_city) as response:
                 json_body = await response.json()
-                code = int(json_body['meta']['code'])
-                if code == 200:
-                    try:
-                        if json_body["response"]["total"] > 0:
-                            city_id: int = json_body["response"]["items"][0]["id"]
-                            city: str = json_body["response"]["items"][0]["name"]
-                            await state.update_data(city_id=city_id)
-                            await state.update_data(city_name=city)
-                            await state.set_state(States.getting_period)
+        code = int(json_body['meta']['code'])
+        if code == 200:
+            try:
+                if json_body["response"]["total"] > 0:
+                    city_id: int = json_body["response"]["items"][0]["id"]
+                    city: str = json_body["response"]["items"][0]["name"]
+                    await state.update_data(city_id=city_id)
+                    await state.update_data(city_name=city)
+                    await state.set_state(States.getting_period)
+                    logging.info(f'[+] Пользователь с id: {user_id} запросил город успешно')
 
-                            await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True))
-                        elif json_body["response"]["total"] == 0:
-                            await message.answer("Город не найден, попробуйте еще раз")
-                    except KeyError:
-                        if json_body["response"]["error"]["code"] == 404:
-                            await message.answer("Город не найден, попробуйте еще раз")
-                        else:
-                            await message.answer("Произошла ошибка. Попробуйте еще раз.")
+                    await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True))
+                elif json_body["response"]["total"] == 0:
+                    await message.answer("Город не найден, введите город еще раз")
+            except KeyError:
+                if json_body["response"]["error"]["code"] == 404:
+                    await message.answer("Город не найден, введите город еще раз")
                 else:
-                    await message.answer("Ошибка сервера, попробуйте позже.")
+                    logging.warning(f'[!!!] При запросе города пользователем id: {user_id} произошла ошибка сервера')
+                    await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+                    await state.set_state(States.getting_weather)
+        else:
+            logging.warning(f'[!!!] При запросе города пользователем id: {user_id} произошла ошибка сервера')
+            await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+            await state.set_state(States.getting_weather)
 
 
 @router.message(States.getting_period, F.text.lower() == "сейчас")
@@ -70,13 +78,20 @@ async def getting_current_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
     city: str = user_data['city_name']
+    user_id: float = message.from_user.id
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(f"{url2}{city_id}") as response:
-            json_body = await response.json()
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(f"{url2}{city_id}") as response:
+                json_body = await response.json()
+        wdata.weather_dict_now['description'] = json_body['response']['description']['full']
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+    except Exception as ex:
+        await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+        await state.set_state(States.getting_weather)
+        logging.warning(f'[!!!] При запросе периода пользователем id: {user_id} произошла ошибка {ex}')
 
     wdata.weather_dict_now['date'] = format_data(json_body['response']['date']['local'][:10]) + " " + json_body['response']['date']['local'][11:16]
-    wdata.weather_dict_now['description'] = json_body['response']['description']['full']
     wdata.weather_dict_now['air_temperature'] = json_body['response']['temperature']['air']['C']
     wdata.weather_dict_now['water_temperature'] = json_body['response']['temperature']['water']['C']
     wdata.weather_dict_now['humidity'] = json_body['response']['humidity']['percent']
@@ -103,13 +118,19 @@ async def getting_current_weather(message: Message, state: FSMContext):
 async def getting_1d_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
-
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(f"{url4}{city_id}/?days=1") as response:
-            json_body = await response.json()
     city: str = user_data['city_name']
+    user_id: float = message.from_user.id
 
-    wdata.weather_dict_1d['date'] = format_data(json_body['response'][1]['date']['local'][:10])
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(f"{url4}{city_id}/?days=1") as response:
+                json_body = await response.json()
+        wdata.weather_dict_1d['date'] = format_data(json_body['response'][1]['date']['local'][:10])
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+    except Exception as ex:
+        await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+        await state.set_state(States.getting_weather)
+        logging.warning(f'[!!!] При запросе периода пользователем id: {user_id} произошла ошибка {ex}')
 
     for i in range(1, 9):
         wdata.weather_dict_1d[i]['time'] = json_body['response'][i - 1]['date']['local'][11:16]
@@ -138,13 +159,19 @@ async def getting_1d_weather(message: Message, state: FSMContext):
 async def getting_1d_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
-
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(f"{url4}{city_id}/?days=2") as response:
-            json_body = await response.json()
+    user_id: float = message.from_user.id
     city: str = user_data['city_name']
 
-    wdata.weather_dict_1d['date'] = format_data(json_body['response'][8]['date']['local'][:10])
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(f"{url4}{city_id}/?days=2") as response:
+                json_body = await response.json()
+        wdata.weather_dict_1d['date'] = format_data(json_body['response'][8]['date']['local'][:10])
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+    except Exception as ex:
+        await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+        await state.set_state(States.getting_weather)
+        logging.warning(f'[!!!] При запросе периода пользователем id: {user_id} произошла ошибка {ex}')
 
     for i in range(1, 9):
         wdata.weather_dict_1d[i]['time'] = json_body['response'][i + 7]['date']['local'][11:16]
@@ -173,23 +200,30 @@ async def getting_1d_weather(message: Message, state: FSMContext):
 async def getting_3d_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
-
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(f"{url3}{city_id}/?&days=3") as response:
-            json_body = await response.json()
     city: str = user_data['city_name']
+    user_id: float = message.from_user.id
 
-    number = 0
-    for i in range(1, 4):
-        for j in range(1, 5):
-            wdata.weather_dict_3d[i][j]['temperature'] = json_body['response'][number]['temperature']['air']['C']
-            wdata.weather_dict_3d[i][j]['wind_direction'] = json_body['response'][number]['wind']['direction'][
-                'scale_8']
-            wdata.weather_dict_3d[i][j]['wind_speed'] = json_body['response'][number]['wind']['speed']['m_s']
-            wdata.weather_dict_3d[i][j]['precipitation_amount'] = json_body['response'][number]['precipitation'][
-                'amount']
-            wdata.weather_dict_3d[i][j]['humidity'] = json_body['response'][number]['humidity']['percent']
-            number += 1
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(f"{url3}{city_id}/?&days=3") as response:
+                json_body = await response.json()
+
+        number = 0
+        for i in range(1, 4):
+            for j in range(1, 5):
+                wdata.weather_dict_3d[i][j]['temperature'] = json_body['response'][number]['temperature']['air']['C']
+                wdata.weather_dict_3d[i][j]['wind_direction'] = json_body['response'][number]['wind']['direction'][
+                    'scale_8']
+                wdata.weather_dict_3d[i][j]['wind_speed'] = json_body['response'][number]['wind']['speed']['m_s']
+                wdata.weather_dict_3d[i][j]['precipitation_amount'] = json_body['response'][number]['precipitation'][
+                    'amount']
+                wdata.weather_dict_3d[i][j]['humidity'] = json_body['response'][number]['humidity']['percent']
+                number += 1
+
+    except Exception as ex:
+        await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+        await state.set_state(States.getting_weather)
+        logging.warning(f'[!!!] При запросе периода пользователем id: {user_id} произошла ошибка {ex}')
 
     weather_result = f'\U0001F30E Город: {city}\n'
 
@@ -225,21 +259,28 @@ async def getting_3d_weather(message: Message, state: FSMContext):
 async def getting_1d_weather(message: Message, state: FSMContext):
     user_data = await state.get_data()
     city_id: int = user_data['city_id']
-
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(f"{url5}{city_id}/?days=7") as response:
-            json_body = await response.json()
     city: str = user_data['city_name']
+    user_id: float = message.from_user.id
 
-    for i in range(1, 8):
-        wdata.weather_dict_7d[i]['date'] = format_data(json_body['response'][i - 1]['date']['local'])
-        wdata.weather_dict_7d[i]['temperature_max'] = json_body['response'][i - 1]['temperature']['air']['max']['C']
-        wdata.weather_dict_7d[i]['temperature_min'] = json_body['response'][i - 1]['temperature']['air']['min']['C']
-        wdata.weather_dict_7d[i]['wind_speed_avg'] = json_body['response'][i - 1]['wind']['speed']['max']['m_s']
-        wdata.weather_dict_7d[i]['wind_direction'] = json_body['response'][i - 1]['wind']['direction']['max']['scale_8']
-        wdata.weather_dict_7d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
-        wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
-        wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(f"{url5}{city_id}/?days=7") as response:
+                json_body = await response.json()
+
+        for i in range(1, 8):
+            wdata.weather_dict_7d[i]['date'] = format_data(json_body['response'][i - 1]['date']['local'])
+            wdata.weather_dict_7d[i]['temperature_max'] = json_body['response'][i - 1]['temperature']['air']['max']['C']
+            wdata.weather_dict_7d[i]['temperature_min'] = json_body['response'][i - 1]['temperature']['air']['min']['C']
+            wdata.weather_dict_7d[i]['wind_speed_avg'] = json_body['response'][i - 1]['wind']['speed']['max']['m_s']
+            wdata.weather_dict_7d[i]['wind_direction'] = json_body['response'][i - 1]['wind']['direction']['max']['scale_8']
+            wdata.weather_dict_7d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
+            wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
+            wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
+
+    except Exception as ex:
+        await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+        await state.set_state(States.getting_weather)
+        logging.warning(f'[!!!] При запросе периода пользователем id: {user_id} произошла ошибка {ex}')
 
     weather_result = f'\U0001F30E Город: {city}\n'
 
