@@ -6,6 +6,7 @@ import aiohttp
 import os
 import logging
 
+import data.requests_counter as req_counter
 import data.weather_data as wdata
 import data.smiles as smdata
 from keyboards.period_keyboard import get_period_keyboard
@@ -55,7 +56,8 @@ async def getting_city(message: Message, state: FSMContext):
                     await state.update_data(city_id=city_id)
                     await state.update_data(city_name=city)
                     await state.set_state(States.getting_period)
-                    logging.info(f'[+] Пользователь с id: {user_id} запросил город успешно')
+                    req_counter.counter += 1
+                    logging.info(f'[+] Пользователь с id: {user_id} запросил город успешно ({req_counter.counter})')
 
                     await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите период"))
                 elif json_body["response"]["total"] == 0:
@@ -85,7 +87,8 @@ async def getting_current_weather(message: Message, state: FSMContext):
             async with session.get(f"{url2}{city_id}") as response:
                 json_body = await response.json()
         wdata.weather_dict_now['description'] = json_body['response']['description']['full']
-        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+        req_counter.counter += 1
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно ({req_counter.counter})')
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
         await state.set_state(States.getting_weather)
@@ -126,7 +129,8 @@ async def getting_1d_weather(message: Message, state: FSMContext):
             async with session.get(f"{url4}{city_id}/?days=1") as response:
                 json_body = await response.json()
         wdata.weather_dict_1d['date'] = format_data(json_body['response'][1]['date']['local'][:10])
-        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+        req_counter.counter += 1
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно ({req_counter.counter})')
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
         await state.set_state(States.getting_weather)
@@ -167,7 +171,8 @@ async def getting_1d_weather(message: Message, state: FSMContext):
             async with session.get(f"{url4}{city_id}/?days=2") as response:
                 json_body = await response.json()
         wdata.weather_dict_1d['date'] = format_data(json_body['response'][8]['date']['local'][:10])
-        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+        req_counter.counter += 1
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно ({req_counter.counter})')
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
         await state.set_state(States.getting_weather)
@@ -219,7 +224,8 @@ async def getting_3d_weather(message: Message, state: FSMContext):
                     'amount']
                 wdata.weather_dict_3d[i][j]['humidity'] = json_body['response'][number]['humidity']['percent']
                 number += 1
-        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+        req_counter.counter += 1
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно ({req_counter.counter})')
 
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
@@ -277,7 +283,8 @@ async def getting_1d_weather(message: Message, state: FSMContext):
             wdata.weather_dict_7d[i]['precipitation_amount'] = json_body['response'][i - 1]['precipitation']['amount']
             wdata.weather_dict_7d[i]['pressure_max'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['max']
             wdata.weather_dict_7d[i]['pressure_min'] = json_body['response'][i - 1]['pressure']['mm_hg_atm']['min']
-        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно')
+        req_counter.counter += 1
+        logging.info(f'[+] Пользователь с id: {user_id} запросил период успешно ({req_counter.counter})')
 
     except Exception as ex:
         await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
