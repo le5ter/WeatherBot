@@ -5,6 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 import aiohttp
 import os
 import logging
+import datetime
 
 import data.requests_counter as req_counter
 import data.weather_data as wdata
@@ -94,7 +95,10 @@ async def getting_current_weather(message: Message, state: FSMContext):
         await state.set_state(States.getting_weather)
         logging.warning(f'[!!!] При запросе периода пользователем id: {user_id} произошла ошибка {ex}')
 
-    wdata.weather_dict_now['date'] = format_data(json_body['response']['date']['local'][:10]) + " " + json_body['response']['date']['local'][11:16]
+    offset = json_body['response']['date']['time_zone_offset'] / 60
+    tz = datetime.timezone(datetime.timedelta(hours=offset))
+    format_time = f'{datetime.datetime.now(tz=tz):%H:%M}'
+    wdata.weather_dict_now['date'] = format_data(json_body['response']['date']['local'][:10]) + " " + format_time
     wdata.weather_dict_now['air_temperature'] = json_body['response']['temperature']['air']['C']
     wdata.weather_dict_now['water_temperature'] = json_body['response']['temperature']['water']['C']
     wdata.weather_dict_now['humidity'] = json_body['response']['humidity']['percent']
