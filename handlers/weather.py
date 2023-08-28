@@ -57,7 +57,7 @@ async def getting_city(message: Message, state: FSMContext):
                     await state.set_state(States.getting_period)
                     logging.info(f'[+] Пользователь с id: {user_id} запросил город успешно')
 
-                    await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True))
+                    await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите период"))
                 elif json_body["response"]["total"] == 0:
                     await message.answer("Город не найден, введите город еще раз")
             except KeyError:
@@ -111,7 +111,7 @@ async def getting_current_weather(message: Message, state: FSMContext):
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите дальнейшее действие"))
 
 
 @router.message(States.getting_period, F.text.lower() == "сегодня")
@@ -152,7 +152,7 @@ async def getting_1d_weather(message: Message, state: FSMContext):
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите дальнейшее действие"))
 
 
 @router.message(States.getting_period, F.text.lower() == "завтра")
@@ -193,7 +193,7 @@ async def getting_1d_weather(message: Message, state: FSMContext):
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите дальнейшее действие"))
 
 
 @router.message(States.getting_period, F.text.lower() == "3 дня")
@@ -252,7 +252,7 @@ async def getting_3d_weather(message: Message, state: FSMContext):
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите дальнейшее действие"))
 
 
 @router.message(States.getting_period, F.text.lower() == "7 дней")
@@ -295,7 +295,7 @@ async def getting_1d_weather(message: Message, state: FSMContext):
 
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
-    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True))
+    await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите дальнейшее действие"))
 
 
 @router.message(States.getting_period)
