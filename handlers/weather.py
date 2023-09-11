@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+# from aiogram.filters import Command
 from dotenv import load_dotenv, find_dotenv
 import aiohttp
 import os
@@ -13,6 +14,7 @@ from bot import r
 from keyboards.period_keyboard import get_period_keyboard
 from keyboards.next_choice_keyboard import get_next_choice_keyboard
 from keyboards.weather_keyboard import get_weather_keyboard
+from keyboards.start_keyboard import get_start_keyboard
 from handlers.common import States
 
 load_dotenv(find_dotenv())
@@ -36,11 +38,22 @@ def format_data(date: str) -> str:
     return f'{day}-{month}-{year}'
 
 
+# @router.message(Command("counter"))
+#     async def cmd_counter(message: Message):
+#      user_id: float = message.from_user.id
+#      counter = int(r.get('request_counter'))
+#      logging.info(f'[!] Пользователь с id: {user_id} узнал кол-во запросов ({counter})')
+#      await message.answer(f'Кол-во запросов: {counter}')
+
+
 @router.message(States.getting_city)
 async def getting_city(message: Message, state: FSMContext):
-    input_city: str = message.text
+    input_city: str = message.text.strip().lower()
     user_id: float = message.from_user.id
     await state.update_data(input_city=input_city)
+
+    logging.info(f'[!] {message.text}...')
+    logging.info(f'[!] url: {url + input_city}')
 
     if input_city.isdigit():
         await message.answer("Оййй, что-то пошло не так, введите город еще раз!")
@@ -48,12 +61,13 @@ async def getting_city(message: Message, state: FSMContext):
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(url + input_city) as response:
                 json_body = await response.json()
+        logging.info(f'{json_body}')
         code = int(json_body['meta']['code'])
         if code == 200:
             try:
-                if json_body["response"]["total"] > 0:
-                    city_id: int = json_body["response"]["items"][0]["id"]
-                    city: str = json_body["response"]["items"][0]["name"]
+                if json_body['response']['total'] > 0:
+                    city_id: int = json_body['response']['items'][0]['id']
+                    city: str = json_body['response']['items'][0]['name']
                     await state.update_data(city_id=city_id)
                     await state.update_data(city_name=city)
                     await state.set_state(States.getting_period)
@@ -61,19 +75,19 @@ async def getting_city(message: Message, state: FSMContext):
                     r.set('request_counter', f'{counter}')
                     logging.info(f'[+] Пользователь с id: {user_id} запросил город успешно ({counter})')
 
-                    await message.answer("Выберите период", reply_markup=get_period_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите период"))
-                elif json_body["response"]["total"] == 0:
-                    await message.answer("Город не найден, введите город еще раз")
+                    await message.answer('Выберите период', reply_markup=get_period_keyboard().as_markup(resize_keyboard=True, input_field_placeholder='Выберите период'))
+                elif json_body['response']['total'] == 0:
+                    await message.answer('Город не найден, введите город еще раз')
             except KeyError:
-                if json_body["response"]["error"]["code"] == 404:
-                    await message.answer("Город не найден, введите город еще раз")
+                if json_body['response']['error']['code'] == 404:
+                    await message.answer('Город не найден, введите город еще раз')
                 else:
-                    logging.warning(f'[!!!] При запросе города пользователем id: {user_id} произошла ошибка сервера')
-                    await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+                    logging.warning(f'[!!] При запросе города пользователем id: {user_id} произошла ошибка сервера ')
+                    await message.answer('Произошла ошибка сервера, попробуйте позже.', reply_markup=get_weather_keyboard())
                     await state.set_state(States.getting_weather)
         else:
             logging.warning(f'[!!!] При запросе города пользователем id: {user_id} произошла ошибка сервера')
-            await message.answer("Произошла ошибка сервера, попробуйте позже.", reply_markup=get_weather_keyboard())
+            await message.answer('Произошла ошибка сервера, попробуйте позже.', reply_markup=get_weather_keyboard())
             await state.set_state(States.getting_weather)
 
 
@@ -315,6 +329,12 @@ async def getting_1d_weather(message: Message, state: FSMContext):
     await state.set_state(States.next_choice)
     await message.answer(weather_result, parse_mode="HTML")
     await message.answer("Выберите дальнейшее действие", reply_markup=get_next_choice_keyboard().as_markup(resize_keyboard=True, input_field_placeholder="Выберите дальнейшее действие"))
+
+
+@router.message(States.getting_period, F.text.lower() == "выйти")
+async def new_city(message: Message, state: FSMContext):
+    await message.answer("Чтобы начать заново, нажмите на кнопку", reply_markup=get_start_keyboard())
+    await state.set_state(States.stop_st)
 
 
 @router.message(States.getting_period)
